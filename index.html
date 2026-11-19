@@ -110,7 +110,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .filters{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
 .chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:.88rem}
 .chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.res{border-collapse:collapse;width:100%;min-width:860px;background:var(--surface);border:1px solid var(--line);font-size:.92rem}
+.res{border-collapse:collapse;width:100%;min-width:1040px;background:var(--surface);border:1px solid var(--line);font-size:.92rem}
 .res th{position:sticky;top:0;background:var(--surface);z-index:1;text-align:right;padding:10px;border-bottom:2px solid var(--line);font-size:.85rem;white-space:nowrap}
 .res th.l{text-align:left}
 .res th button{background:none;border:0;padding:0;font-weight:600;color:var(--ink)}
@@ -124,6 +124,9 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .res td.best::after{content:"★";font-size:.75rem;margin-left:4px}
 .opt{font-size:.8rem;color:var(--muted)}
 .plans{font-weight:600}
+.res td.blank{color:var(--muted)}
+.tag.hsa{color:var(--best)}
+.filters .sep{width:1px;background:var(--line);margin:2px 4px}
 .tag{display:inline-block;font-size:.72rem;padding:1px 6px;border-radius:3px;background:var(--soft);color:var(--muted);margin-left:6px;vertical-align:1px}
 .tag.lock{color:var(--warn)}
 .detail td{background:var(--paper);padding:0;text-align:left}
@@ -434,10 +437,29 @@ qtyEl.addEventListener("input",function(e){
 
 /* ---------- results table ---------- */
 var COLS=[{id:"low",name:"Low"},{id:"med",name:"Medium"},{id:"high",name:"High"},{id:"vhigh",name:"Very high"},{id:"max",name:"Max"}];
-var sortCol="med",sortDir=1,shown={A:true,B:true,C:true,D:true},openRows={};
+var sortCol="med",sortDir=1,shown={A:true,B:true,C:true,D:true},hsaOnly=false,openRows={};
+var SETUP=[{id:"my",name:"My plan"},{id:"net",name:"Spouse network"},{id:"type",name:"Spouse type"},{id:"kids",name:"Kids on"}];
+var TYPE_RANK={Low:0,Medium:1,HDHP:2};
+function setupOf(o){
+  var mine=null,sp=null,kids="";
+  o.units.forEach(function(u){
+    if(u.plan.owner==="you")mine=u.plan;else sp=u.plan;
+    if(u.who.indexOf("kids")>-1)kids=u.plan.owner==="you"?"Mine":"Spouse’s";
+  });
+  return {mine:mine,sp:sp,my:mine?mine.name:"",net:sp?sp.net:"",type:sp?sp.lvl:"",kids:kids};
+}
+function hsaEligible(o){return o.units.some(function(u){return u.plan.hsa;});}
+function setupCmp(a,b,col){
+  var x=setupOf(a.opt)[col],y=setupOf(b.opt)[col];
+  if(x===y)return 0;
+  if(!x)return 1;if(!y)return -1;
+  if(col==="type")return TYPE_RANK[x]-TYPE_RANK[y];
+  return x<y?-1:1;
+}
 var tbl=document.getElementById("res");
 function header(){
-  var h='<tr><th class="l" scope="col"><button type="button" data-sort="label">Coverage setup<span class="ar">'+(sortCol==="label"?(sortDir>0?"▲":"▼"):"")+'</span></button></th>';
+  var h='<tr>';
+  SETUP.forEach(function(c){h+='<th class="l" scope="col" aria-sort="'+(sortCol===c.id?(sortDir>0?"ascending":"descending"):"none")+'"><button type="button" data-sort="'+c.id+'">'+c.name+'<span class="ar">'+(sortCol===c.id?(sortDir>0?"▲":"▼"):"↕")+'</span></button></th>';});
   COLS.forEach(function(c){h+='<th scope="col" aria-sort="'+(sortCol===c.id?(sortDir>0?"ascending":"descending"):"none")+'"><button type="button" data-sort="'+c.id+'">'+c.name+'<span class="ar">'+(sortCol===c.id?(sortDir>0?"▲":"▼"):"↕")+'</span></button></th>';});
   tbl.tHead.innerHTML=h+"</tr>";
 }
@@ -467,24 +489,30 @@ function detailHTML(r){
 }
 function renderTable(){
   header();
-  var all=evalAll(state),rows=all.filter(function(r){return shown[r.opt.g];});
+  var all=evalAll(state),rows=all.filter(function(r){return shown[r.opt.g]&&(!hsaOnly||hsaEligible(r.opt));});
   var stats={};COLS.forEach(function(c){var v=rows.map(function(r){return val(r,c.id);});stats[c.id]={min:Math.min.apply(null,v),max:Math.max.apply(null,v)};});
   rows.sort(function(a,b){
-    if(sortCol==="label"){var x=a.opt.g+a.opt.label,y=b.opt.g+b.opt.label;return x<y?-sortDir:x>y?sortDir:0;}
+    if(SETUP.some(function(c){return c.id===sortCol;})){var d=setupCmp(a,b,sortCol)*sortDir;return d||val(a,"med")-val(b,"med");}
     return (val(a,sortCol)-val(b,sortCol))*sortDir;
   });
   var h="";
   rows.forEach(function(r){
     var o=r.opt,gname=GROUPDEF.filter(function(g){return g.id===o.g;})[0].name,isOpen=!!openRows[o.idx];
-    h+='<tr class="row" tabindex="0" data-i="'+o.idx+'" aria-expanded="'+isOpen+'"><td class="l"><div class="plans">'+esc(o.label)+(o.lock?'<span class="tag lock">B3 locked</span>':'')+'</div><div class="opt">'+esc(gname)+'</div></td>';
+    var su=setupOf(o);
+    function cell(v,extra){return '<td class="l'+(v?"":" blank")+'"><span class="plans">'+esc(v)+'</span>'+(extra||"")+'</td>';}
+    h+='<tr class="row" tabindex="0" data-i="'+o.idx+'" aria-expanded="'+isOpen+'" title="'+esc(gname)+'">'+
+      cell(su.my,(o.lock?'<span class="tag lock">locked</span>':'')+(su.mine&&su.mine.hsa?'<span class="tag hsa">HSA</span>':''))+
+      cell(su.net)+
+      cell(su.type,su.sp&&su.sp.hsa?'<span class="tag hsa">HSA</span>':'')+
+      cell(su.kids);
     COLS.forEach(function(c){
       var v=val(r,c.id),st=stats[c.id],t=st.max>st.min?(v-st.min)/(st.max-st.min):0,best=Math.round(v)===Math.round(st.min);
       h+='<td class="heat'+(best?" best":"")+'" style="background:'+heatColor(t)+'">'+$(v)+'</td>';
     });
     h+='</tr>';
-    if(isOpen)h+='<tr class="detail"><td colspan="'+(COLS.length+1)+'">'+detailHTML(r)+'</td></tr>';
+    if(isOpen)h+='<tr class="detail"><td colspan="'+(COLS.length+SETUP.length)+'">'+detailHTML(r)+'</td></tr>';
   });
-  if(!rows.length)h='<tr><td class="l" colspan="6">Pick at least one coverage setup above to see totals.</td></tr>';
+  if(!rows.length)h='<tr><td class="l" colspan="'+(COLS.length+SETUP.length)+'">No coverage setups match these filters.</td></tr>';
   tbl.tBodies[0].innerHTML=h;
 }
 tbl.addEventListener("click",function(e){
@@ -496,8 +524,13 @@ tbl.addEventListener("keydown",function(e){
   var tr=e.target.closest("tr.row");if(tr&&(e.key==="Enter"||e.key===" ")){e.preventDefault();var i=tr.dataset.i;openRows[i]=!openRows[i];renderTable();var n=tbl.querySelector('tr.row[data-i="'+i+'"]');if(n)n.focus();}
 });
 var fEl=document.getElementById("filters");
-fEl.innerHTML=GROUPDEF.map(function(g){return '<button type="button" class="chip" data-g="'+g.id+'" aria-pressed="true">'+esc(g.name)+'</button>';}).join("");
-fEl.addEventListener("click",function(e){var b=e.target.closest(".chip");if(!b)return;var g=b.dataset.g;shown[g]=!shown[g];b.setAttribute("aria-pressed",shown[g]);renderTable();});
+fEl.innerHTML=GROUPDEF.map(function(g){return '<button type="button" class="chip" data-g="'+g.id+'" aria-pressed="true">'+esc(g.name)+'</button>';}).join("")+
+  '<span class="sep" aria-hidden="true"></span><button type="button" class="chip" data-hsa aria-pressed="false">HSA eligible only</button>';
+fEl.addEventListener("click",function(e){
+  var b=e.target.closest(".chip");if(!b)return;
+  if(b.hasAttribute("data-hsa")){hsaOnly=!hsaOnly;b.setAttribute("aria-pressed",hsaOnly);renderTable();return;}
+  var g=b.dataset.g;shown[g]=!shown[g];b.setAttribute("aria-pressed",shown[g]);renderTable();
+});
 
 /* ---------- summary (defaults) ---------- */
 function renderSummary(){
