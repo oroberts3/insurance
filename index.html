@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>2027 health plan comparison</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F3F6F7;--surface:#FFFFFF;--ink:#1B2A31;--muted:#566870;--line:#D3DCE0;--soft:#E8EEF0;
+  --accent:#2C5A86;--accent-ink:#FFFFFF;--good:#BFE5CC;--mid:#F2EBC8;--bad:#F2C6BE;--best:#0F5A31;--warn:#8A5A00;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#10171B;--surface:#172126;--ink:#E2E9EC;--muted:#97A8AF;--line:#2B3940;--soft:#1E2A30;
+    --accent:#86B0D8;--accent-ink:#0E1A24;--good:#1E4A33;--mid:#4A4322;--bad:#552D2B;--best:#9BE3B5;--warn:#E8C26A;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#10171B;--surface:#172126;--ink:#E2E9EC;--muted:#97A8AF;--line:#2B3940;--soft:#1E2A30;
+  --accent:#86B0D8;--accent-ink:#0E1A24;--good:#1E4A33;--mid:#4A4322;--bad:#552D2B;--best:#9BE3B5;--warn:#E8C26A;
+  color-scheme:dark;
+}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 "Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-variant-numeric:tabular-nums}
+main{max-width:1180px;margin:0 auto;padding:28px 20px 64px}
+h1,h2,h3{font-family:"Newsreader",Georgia,"Times New Roman",serif;font-weight:600;line-height:1.15;margin:0}
+h1{font-size:2.3rem;letter-spacing:-.01em}
+h2{font-size:1.5rem;margin-bottom:6px}
+h3{font-size:1.1rem}
+p{margin:.4em 0;max-width:78ch}
+.lede{color:var(--muted);margin-top:8px}
+section{margin-top:40px}
+.note{color:var(--muted);font-size:.85rem}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* summary */
+.sum-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-top:14px}
+.sum-cell{background:var(--surface);padding:16px}
+.sum-cell .k{color:var(--muted);font-size:.85rem}
+.sum-cell .v{font-family:"Newsreader",Georgia,serif;font-size:1.65rem;font-weight:600;margin:2px 0}
+.sum-cell .w{font-weight:600}
+.takeaways{margin:16px 0 0;padding-left:1.1em}
+.takeaways li{margin:.35em 0;max-width:80ch}
+
+/* controls */
+.assume{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:end;margin-top:12px;padding:14px 16px;background:var(--surface);border:1px solid var(--line)}
+.assume label{display:flex;flex-direction:column;font-size:.85rem;color:var(--muted);gap:4px}
+.assume input[type=number]{width:96px}
+.assume .chk{flex-direction:row;align-items:center;gap:8px;color:var(--ink);font-size:.92rem}
+input[type=number]{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:5px 7px;text-align:right}
+.btn{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:7px 12px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
+/* services */
+.scroll{overflow-x:auto}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+.svcbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;margin-top:12px;background:var(--surface);border:1px solid var(--line);display:grid;grid-template-columns:minmax(150px,1.3fr) repeat(4,minmax(110px,1fr)) auto;align-items:stretch}
+.svcbar>*{padding:10px 14px;border-right:1px solid var(--soft)}
+.svcbar>*:last-child{border-right:0}
+.svcbar .tog{display:flex;align-items:center;gap:8px;background:none;border:0;border-right:1px solid var(--soft);text-align:left;font-weight:600}
+.svcbar .tog .car{color:var(--muted);transition:transform .15s}
+.svcbar .tog[aria-expanded="true"] .car{transform:rotate(90deg)}
+.svcbar .lv{display:flex;flex-direction:column;gap:2px}
+.svcbar .lv .n{font-size:.82rem;color:var(--muted)}
+.svcbar .lv .v{font-weight:600;font-size:1.05rem}
+.svcbar .lv button,.mini{align-self:flex-start;background:none;border:0;padding:0;color:var(--accent);font-size:.8rem;text-decoration:underline;text-underline-offset:2px}
+.svcbar .all{display:flex;align-items:center}
+@media (max-width:760px){.svcbar{grid-template-columns:repeat(2,1fr)}.svcbar .tog{grid-column:1/-1;border-right:0;border-bottom:1px solid var(--soft)}.svcbar .all{grid-column:1/-1}}
+#svcwrap{border:1px solid var(--line);border-top:0;background:var(--surface)}
+.qty{border-collapse:collapse;width:100%;font-size:.88rem}
+.qty th,.qty td{padding:5px 10px;border-top:1px solid var(--soft);text-align:center;white-space:nowrap}
+.qty thead th{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--barh,0px));z-index:2;background:var(--surface);font-weight:600;color:var(--muted);font-size:.82rem;border-top:0;border-bottom:1px solid var(--line)}
+.qty thead th button{background:none;border:0;padding:0;font-weight:600;color:var(--ink)}
+.qty thead th button .ar{color:var(--muted);margin-left:4px}
+.qty td.it,.qty th.it{text-align:left}
+.qty td.lv{color:var(--muted)}
+.qty td.bl{text-align:right;color:var(--muted)}
+.qty tbody.grpb{border-top:2px solid var(--line)}
+.qty th.head{vertical-align:top;font-weight:600;color:var(--ink);font-size:.88rem;padding-top:9px;border-right:1px solid var(--soft);position:static;background:none}
+.qty .swap{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line)!important;border-radius:4px;padding:3px 8px!important;background:var(--paper)!important}
+@media (max-width:760px){#svcwrap{overflow-x:auto}.qty{min-width:720px}.qty thead th{position:static}}
+.step{display:inline-flex;align-items:stretch;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--paper)}
+.step input{width:32px;border:0;border-radius:0;text-align:center;background:transparent;padding:4px 0;-moz-appearance:textfield}
+.step input::-webkit-inner-spin-button,.step input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.step .arr{display:flex;flex-direction:column;border-left:1px solid var(--line)}
+.step .arr button{border:0;background:var(--soft);width:18px;flex:1;font-size:.55rem;line-height:1;padding:0;color:var(--muted)}
+.step .arr button:hover{background:var(--line);color:var(--ink)}
+.step .arr button+button{border-top:1px solid var(--line)}
+.step.zero input{color:var(--muted)}
+.costin{width:80px}
+.qty tr.mod td,.qty tr.mod th.head{background:color-mix(in oklab, var(--accent) 7%, var(--surface))}
+.qty tr.mod td.lv{color:var(--ink);font-weight:600}
+.step.chg{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.step.chg input{color:var(--accent);font-weight:700}
+.costin.chg{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);color:var(--accent);font-weight:700}
+.mini:disabled,.svcbar .lv button:disabled,.btn:disabled{color:var(--muted);opacity:.4;cursor:default;text-decoration:none}
+.svcbar .lv.mod .n::after{content:" · edited";color:var(--accent);font-weight:600}
+.qty .mini{font-size:1rem;text-decoration:none;padding:2px 6px}
+/* results table */
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:.88rem}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.res{border-collapse:collapse;width:100%;min-width:860px;background:var(--surface);border:1px solid var(--line);font-size:.92rem}
+.res th{position:sticky;top:0;background:var(--surface);z-index:1;text-align:right;padding:10px;border-bottom:2px solid var(--line);font-size:.85rem;white-space:nowrap}
+.res th.l{text-align:left}
+.res th button{background:none;border:0;padding:0;font-weight:600;color:var(--ink)}
+.res th button .ar{color:var(--muted);margin-left:4px}
+.res td{padding:8px 10px;border-top:1px solid var(--soft);text-align:right;white-space:nowrap}
+.res td.l{text-align:left;white-space:normal}
+.res tr.row{cursor:pointer}
+.res tr.row:hover td.l{text-decoration:underline;text-decoration-color:var(--line)}
+.res td.heat{position:relative}
+.res td.best{font-weight:700;color:var(--best)}
+.res td.best::after{content:"★";font-size:.75rem;margin-left:4px}
+.opt{font-size:.8rem;color:var(--muted)}
+.plans{font-weight:600}
+.tag{display:inline-block;font-size:.72rem;padding:1px 6px;border-radius:3px;background:var(--soft);color:var(--muted);margin-left:6px;vertical-align:1px}
+.tag.lock{color:var(--warn)}
+.detail td{background:var(--paper);padding:0;text-align:left}
+.detail .inner{padding:12px 16px 16px}
+.brk{border-collapse:collapse;font-size:.86rem;min-width:620px}
+.brk th,.brk td{padding:4px 12px;text-align:right;border-top:1px solid var(--soft)}
+.brk th:first-child,.brk td:first-child{text-align:left}
+.brk tr.tot td{font-weight:700;border-top:1px solid var(--line)}
+.brk .neg{color:var(--best)}
+.units{margin:0 0 8px;color:var(--muted);font-size:.85rem}
+.legend{display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--muted);margin-top:8px}
+.legend .bar{width:120px;height:10px;background:linear-gradient(90deg,var(--good),var(--mid),var(--bad));border:1px solid var(--line)}
+footer{margin-top:40px;color:var(--muted);font-size:.83rem}
+footer li{margin:.3em 0;max-width:90ch}
+@media (max-width:640px){h1{font-size:1.8rem}main{padding:20px 14px 48px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Health plan options for 2027</h1>
+    <p class="lede">My plans and my spouse’s plans, compared across four expense levels. I’m locked into B3 for myself; my spouse and the kids can still move.</p>
+  </header>
+
+  <section id="summary" aria-labelledby="sum-h">
+    <h2 id="sum-h">Summary at the default estimates</h2>
+    <p class="note">Uses the default visits, costs and assumptions, even if you’ve edited them below.</p>
+    <div class="sum-grid" id="sumGrid"></div>
+    <ul class="takeaways" id="takeaways"></ul>
+  </section>
+
+  <section aria-labelledby="sc-h" id="svc">
+    <h2 id="sc-h">What each expense level includes</h2>
+    <p class="note">Annual visits and fills before insurance. The kids’ column is the total for all four; it’s split evenly between them, with one-off items like an ER visit or hospital stay landing on one kid. Item costs are negotiated prices and apply to every expense level. Preventive care and well-child visits are free on every plan and aren’t listed.</p>
+    <div class="svcbar" id="svcbar"></div>
+    <div id="svcwrap" hidden><table class="qty" id="qty"></table></div>
+  </section>
+
+  <section aria-labelledby="res-h">
+    <h2 id="res-h">Annual total by coverage setup</h2>
+    <p class="note">Premiums + out-of-pocket − employer HSA money − tax savings on a maxed-out HSA. Click a column to sort, click a row for the breakdown.</p>
+    <div class="filters" id="filters" role="group" aria-label="Show coverage setups"></div>
+    <div class="scroll"><table class="res" id="res"><thead></thead><tbody></tbody></table></div>
+    <div class="legend"><span>Cheapest</span><span class="bar"></span><span>Most expensive in column</span><span>★ best</span></div>
+  </section>
+
+  <footer>
+    <h3>How it’s calculated</h3>
+    <ul>
+      <li>Every visit, test and fill is run through each plan’s in-network rules: per-person and family deductibles (shared-only on F4 and my spouse’s HDHPs), copays before or after the deductible, coinsurance, and per-person and family out-of-pocket maxes.</li>
+      <li>Any setup with an HDHP assumes the HSA is maxed out: tax savings = 30% × (contribution limit − employer money). The 2027 limit is $9,000 when anyone in the household has family HDHP coverage (spouse & kids, or me & kids on F4), and $4,500 when the only HDHP is self-only coverage (spouse alone, or me alone on F4). Adults are assumed to use the employer clinic for primary care on my spouse’s plans ($0).</li>
+      <li>My spouse’s Reach and Focus Medium copays are assumed from the Flex Medium plan summary. My spouse’s Low plans use the >$75k terms. My F4 has no known employer HSA contribution.</li>
+      <li>Max = premiums + every plan’s out-of-pocket max, after HSA money and tax savings. Out-of-network care, non-covered services and balance billing aren’t included.</li>
+      <li>Estimates for comparison only; the plan documents control.</li>
+    </ul>
+  </footer>
+</main>
+
+<script>
+(function(){
+"use strict";
+var SCEN=[{id:"low",name:"Low"},{id:"med",name:"Medium"},{id:"high",name:"High"},{id:"vhigh",name:"Very high"}];
+var GROUPS=[{id:"you",name:"Me"},{id:"wife",name:"Spouse"},{id:"kids",name:"Kids"}];
+var SERVICES=[
+ {id:"pcp",name:"Visit – primary care (sick)",cost:225},
+ {id:"spec",name:"Visit – specialist",cost:350},
+ {id:"uc",name:"Visit – urgent care",cost:250},
+ {id:"er",name:"Visit – ER",cost:2500},
+ {id:"lab",name:"Test – lab panel",cost:150},
+ {id:"xray",name:"Test – X-ray",cost:250},
+ {id:"mri",name:"Test – MRI / CT scan",cost:1200},
+ {id:"hosp",name:"Hospital – stay (facility)",cost:25000},
+ {id:"hprof",name:"Hospital – stay (doctors)",cost:5000},
+ {id:"osf",name:"Procedure – outpatient (facility)",cost:8000},
+ {id:"oprof",name:"Procedure – outpatient (surgeon)",cost:3000},
+ {id:"orx",name:"Prescription – ongoing (adult 1)",cost:50},
+ {id:"wrx",name:"Prescription – ongoing (adult 2)",cost:25},
+ {id:"krx",name:"Prescription – kids short-term",cost:15}
+];
+var RX={orx:1,wrx:1,krx:1};
+var DEFAULT_Q={
+ low:{you:{pcp:3,lab:1,orx:36},wife:{pcp:2,wrx:24},kids:{pcp:8,krx:4}},
+ med:{you:{pcp:4,spec:2,uc:1,lab:3,xray:1,orx:36},wife:{pcp:3,spec:1,lab:2,wrx:24},kids:{pcp:16,uc:4,krx:8,er:1,xray:1}},
+ high:{you:{pcp:6,spec:4,uc:2,lab:6,xray:2,mri:1,orx:36},wife:{pcp:5,spec:3,uc:1,lab:4,mri:1,wrx:24},kids:{pcp:24,uc:8,spec:4,lab:10,krx:8,er:1,xray:2}},
+ vhigh:{you:{pcp:6,spec:6,uc:1,lab:6,mri:1,osf:1,oprof:1,orx:36},wife:{pcp:4,spec:3,lab:4,mri:1,wrx:24},kids:{pcp:24,uc:8,spec:4,lab:7,krx:16,er:1,xray:1,hosp:1,hprof:1}}
+};
+var ASSUME={taxRate:30,hsaSelf:4500,hsaFam:9000,ownHsa:0,marathon:true};
+
+/* ---------- plans ---------- */
+function aetna(id,prem,ded,oop,agg,hsa,r,rxded){return {id:id,owner:"you",name:id,prem:prem.map(function(m){return m*12}),ded:ded,oop:oop,agg:agg,hsa:hsa,rules:r,rxded:rxded||null,hsaEmp:null};}
+var B3=aetna("B3",[87.73,575.62,991.91],[1000,2000,2000],[5500,11000,11000],false,false,
+ {pcp:["cn",20],spec:["cn",65],uc:["cn",75],er:["cn",400],lab:["kd",.2],xray:["kd",.2],mri:["kd",.2],hosp:["kd",.2],hprof:["kd",.2],osf:["kd",.2],oprof:["kd",.2],rx:["rx",10]},[100,300]);
+var F4=aetna("F4",[83.39,566.95,978.48],[1700,3400,3400],[3000,6000,6000],true,true,
+ {pcp:["cd",30],spec:["cd",45],uc:["cd",75],er:["cd",400],lab:["kd",0],xray:["kd",0],mri:["kd",0],hosp:["cd",750],hprof:["kd",0],osf:["cd",300],oprof:["kd",0],rx:["cd",10]});
+var G6=aetna("G6",[54.26,508.69,888.16],[3000,6000,6000],[6000,12000,12000],false,false,
+ {pcp:["cn",30],spec:["cn",60],uc:["cn",85],er:["cn",500],lab:["kd",0],xray:["kd",0],mri:["kd",0],hosp:["cd",600],hprof:["kd",0],osf:["cd",200],oprof:["kd",0],rx:["cn",10]});
+var MINE=[B3,F4,G6];
+
+function lowRules(er){return {pcp:["cn",15],apcpM:["cn",0],apcp:["cn",100],spec:["cn",40],uc:["cn",25],er:["cd",er],lab:["kd",0],xray:["cd",50],mri:["cd",250],hosp:["cd",500],hprof:["kd",0],osf:["cd",300],oprof:["kd",0],rx:["cn",15]};}
+var MED_R={pcp:["cn",15],apcpM:["cn",0],apcp:["cn",110],spec:["cn",55],uc:["cn",55],er:["cn",600],lab:["kd",.2],xray:["kd",.2],mri:["kd",.2],hosp:["kd",.2],hprof:["kd",.2],osf:["kd",.2],oprof:["kd",.2],rx:["cn",15]};
+var HD_R={pcp:["kd",.2],apcpM:["cn",0],apcp:["kd",.2],spec:["kd",.2],uc:["kd",.2],er:["kd",.2],lab:["kd",.2],xray:["kd",.2],mri:["kd",.2],hosp:["kd",.2],hprof:["kd",.2],osf:["kd",.2],oprof:["kd",.2],rx:["kd",.2]};
+function hers(net,lvl,prem,extra){
+  var p={owner:"her",net:net,lvl:lvl,name:net+" "+lvl,prem:prem,agg:false,hsa:false,hsaEmp:null};
+  if(lvl==="Low"){p.ded=[600,1200,1200];p.oop=[5000,10000,10000];p.rules=lowRules(net==="Flex"?600:500);}
+  else if(lvl==="Medium"){p.ded=[1100,2000,2200];p.oop=net==="Flex"?[6000,9000,9000]:[4000,6000,8000];p.rules=MED_R;}
+  else {p.ded=[1750,3500,3700];p.oop=[4000,6000,8000];p.agg=true;p.hsa=true;p.hsaEmp=[600,900,1200];p.rules=HD_R;p.name=net+" HDHP";}
+  p.id=p.name;return p;
+}
+var HERS=[
+ hers("Reach","Low",[2574,3804,10084]),hers("Reach","Medium",[1976,3172,8710]),hers("Reach","HDHP",[1956,3037,8537]),
+ hers("Focus","Low",[2306,3260,8843]),hers("Focus","Medium",[1882,2972,7837]),hers("Focus","HDHP",[1610,2618,6991]),
+ hers("Flex","Low",[2846,4164,10625]),hers("Flex","Medium",[3966,6731,15955]),hers("Flex","HDHP",[2800,4089,10428])
+];
+var NETNOTE={Reach:"broad, in-network only",Focus:"narrow network",Flex:"broad, out-of-network covered"};
+
+/* ---------- options ---------- */
+var GROUPDEF=[
+ {id:"A",name:"Me alone · Spouse & kids"},
+ {id:"B",name:"Me & kids · Spouse alone"},
+ {id:"C",name:"Whole family on my plan"},
+ {id:"D",name:"Whole family on my spouse’s plan"}
+];
+var OPTIONS=[];
+HERS.forEach(function(h){OPTIONS.push({g:"A",label:"B3 + "+h.name,units:[{plan:B3,tier:0,who:["you"]},{plan:h,tier:1,who:["wife","kids"]}],lock:true});});
+MINE.forEach(function(m){HERS.forEach(function(h){OPTIONS.push({g:"B",label:m.name+" + "+h.name,units:[{plan:m,tier:1,who:["you","kids"]},{plan:h,tier:0,who:["wife"]}]});});});
+MINE.forEach(function(m){OPTIONS.push({g:"C",label:m.name,units:[{plan:m,tier:2,who:["you","wife","kids"]}]});});
+HERS.forEach(function(h){OPTIONS.push({g:"D",label:h.name,units:[{plan:h,tier:2,who:["you","wife","kids"]}]});});
+OPTIONS.forEach(function(o,i){o.idx=i;});
+
+/* ---------- state ---------- */
+function clone(x){return JSON.parse(JSON.stringify(x));}
+function defaults(){var c={};SERVICES.forEach(function(s){c[s.id]=s.cost;});return {q:clone(DEFAULT_Q),c:c,a:ASSUME};}
+var KEY="hpc-state-v3";
+var state=defaults();
+try{var saved=localStorage.getItem(KEY);if(saved){var s=JSON.parse(saved);if(s&&s.q&&s.c){s.a=ASSUME;state=s;}}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({q:state.q,c:state.c}));}catch(e){}}
+
+/* ---------- engine ---------- */
+function claimsFor(q,c,who){
+  // returns members [{adult, claims:[[svc,amt]]}]
+  var mem=[];
+  function add(adult,groups){var cl=[];groups.forEach(function(g){SERVICES.forEach(function(s){var n=(q[g]&&q[g][s.id])||0;for(var i=0;i<n;i++)cl.push([s.id,+c[s.id]||0]);});});mem.push({adult:adult,claims:cl});}
+  who.forEach(function(w){
+    if(w==="you")add(true,["you"]);
+    else if(w==="wife")add(true,["wife"]);
+    else if(w==="kids"){
+      // spread the kids' total round-robin across 4 kids, so one-off items (ER, hospital) land on one kid
+      var k=[[],[],[],[]];
+      SERVICES.forEach(function(s){var n=(q.kids&&q.kids[s.id])||0;for(var i=0;i<n;i++)k[i%4].push([s.id,+c[s.id]||0]);});
+      k.forEach(function(cl){mem.push({adult:false,claims:cl});});
+    }
+  });
+  return mem;
+}
+function ruleFor(plan,svc,adult,marathon){
+  if(RX[svc])return plan.rules.rx;
+  if(svc==="pcp"&&adult&&plan.owner==="her")return marathon?plan.rules.apcpM:plan.rules.apcp;
+  return plan.rules[svc];
+}
+function runPlan(plan,tier,mem,marathon){
+  var fam=mem.length>1,di=plan.ded[0],df=plan.ded[tier],oi=plan.oop[0],of=plan.oop[tier],agg=plan.agg&&fam;
+  var n=mem.length,pd=[],po=[],rx=[],FD=0,FO=0,FR=0,out={pre:0,cop:0,coi:0};
+  for(var i=0;i<n;i++){pd[i]=0;po[i]=0;rx[i]=0;}
+  mem.forEach(function(m,i){
+    m.claims.forEach(function(cl){
+      var svc=cl[0],amt=cl[1],r=ruleFor(plan,svc,m.adult,marathon),k=r[0],p=r[1],pre=0,cop=0,coi=0,dd=0,rem;
+      if(k==="cn"){cop=Math.min(p,amt);}
+      else if(k==="rx"){var ri=plan.rxded[0],rf=plan.rxded[1];rem=Math.max(fam?Math.min(ri-rx[i],rf-FR):ri-rx[i],0);var x=Math.min(rem,amt);rx[i]+=x;FR+=x;pre=x;cop=amt>x?Math.min(p,amt-x):0;}
+      else{
+        rem=agg?df-FD:(fam?Math.min(di-pd[i],df-FD):di-pd[i]);rem=Math.max(rem,0);
+        dd=Math.min(rem,amt);pre=dd;var rest=amt-dd;
+        if(rest>0){if(k==="cd")cop=Math.min(p,rest);else coi=p*rest;}
+      }
+      pd[i]+=dd;FD+=dd;
+      var cost=pre+cop+coi,cap=agg?of-FO:(fam?Math.min(oi-po[i],of-FO):oi-po[i]);cap=Math.max(cap,0);
+      if(cost>cap){var f=cost>0?cap/cost:0;pre*=f;cop*=f;coi*=f;cost=cap;}
+      po[i]+=cost;FO+=cost;out.pre+=pre;out.cop+=cop;out.coi+=coi;
+    });
+  });
+  out.oop=out.pre+out.cop+out.coi;return out;
+}
+function hsaInfo(opt,a){
+  var any=false,famCov=false,selfCount=0,emp=0;
+  opt.units.forEach(function(u){
+    if(!u.plan.hsa)return;any=true;
+    if(u.tier>0)famCov=true;else selfCount++;
+    emp+=u.plan.owner==="her"?u.plan.hsaEmp[u.tier]:(+a.ownHsa||0);
+  });
+  var limit=famCov?a.hsaFam:Math.min(selfCount,1)*a.hsaSelf;
+  return {any:any,emp:emp,room:Math.max(limit-emp,0),rate:a.taxRate/100};
+}
+function evalOpt(opt,st,scen){
+  var q=st.q[scen],res={prem:0,pre:0,cop:0,coi:0,oop:0,units:[]};
+  opt.units.forEach(function(u){
+    var mem=claimsFor(q,st.c,u.who),r=runPlan(u.plan,u.tier,mem,st.a.marathon);
+    res.prem+=u.plan.prem[u.tier];res.pre+=r.pre;res.cop+=r.cop;res.coi+=r.coi;res.oop+=r.oop;
+    res.units.push({plan:u.plan,tier:u.tier,who:u.who,prem:u.plan.prem[u.tier],oop:r.oop});
+  });
+  var h=hsaInfo(opt,st.a);res.emp=h.any?h.emp:0;
+  res.tax=h.any?h.rate*h.room:0;
+  res.total=res.prem+res.oop-res.emp-res.tax;return res;
+}
+function evalMax(opt,st){
+  var prem=0,oop=0;
+  opt.units.forEach(function(u){prem+=u.plan.prem[u.tier];oop+=u.who.length>1||u.who[0]==="kids"?u.plan.oop[u.tier]:u.plan.oop[0];});
+  var h=hsaInfo(opt,st.a),emp=h.any?h.emp:0,tax=h.any?h.rate*h.room:0;
+  return {prem:prem,oop:oop,emp:emp,tax:tax,total:prem+oop-emp-tax};
+}
+function evalAll(st){
+  return OPTIONS.map(function(o){
+    var r={opt:o,s:{}};SCEN.forEach(function(sc){r.s[sc.id]=evalOpt(o,st,sc.id);});r.max=evalMax(o,st);return r;
+  });
+}
+
+/* ---------- formatting ---------- */
+function $(n){return "$"+Math.round(n).toLocaleString("en-US");}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function val(r,col){return col==="max"?r.max.total:r.s[col].total;}
+
+/* ---------- services UI ---------- */
+var svcOpen=false,barEl=document.getElementById("svcbar"),wrapEl=document.getElementById("svcwrap"),qtyEl=document.getElementById("qty");
+function billed(scen){
+  var q=state.q[scen],t=0;
+  SERVICES.forEach(function(s){var c=+state.c[s.id]||0;GROUPS.forEach(function(g){t+=c*((q[g.id]&&q[g.id][s.id])||0);});});
+  return t;
+}
+function buildBar(){
+  var h='<button type="button" class="tog" id="tog" aria-expanded="'+svcOpen+'" aria-controls="svcwrap"><span class="car">▸</span>'+(svcOpen?"Hide":"Show")+' visits & costs</button>';
+  SCEN.forEach(function(sc){h+='<div class="lv" data-lvbox="'+sc.id+'"><span class="n">'+sc.name+', billed</span><span class="v" data-billed="'+sc.id+'"></span><button type="button" data-reset-lv="'+sc.id+'">Reset '+sc.name.toLowerCase()+'</button></div>';});
+  h+='<div class="all"><button type="button" class="btn" data-reset-all>Reset all</button></div>';
+  barEl.innerHTML=h;updateBilled();if(typeof refreshMarks==="function")refreshMarks();
+}
+function stepper(sc,g,sv,v){
+  return '<span class="step'+(v?"":" zero")+'"><input type="number" min="0" step="1" value="'+v+'" data-s="'+sc+'" data-g="'+g+'" data-v="'+sv+'" aria-label="'+sc+' '+g+' '+sv+'"><span class="arr"><button type="button" data-d="1" aria-label="More" tabindex="-1">▲</button><button type="button" data-d="-1" aria-label="Fewer" tabindex="-1">▼</button></span></span>';
+}
+var qBy="item",LVORD={low:0,med:1,high:2,vhigh:3};
+function buildTable(){
+  var outer=qBy==="item"?SERVICES.slice().sort(function(a,b){return a.name.localeCompare(b.name);}):SCEN;
+  var inner=qBy==="item"?SCEN:SERVICES.slice().sort(function(a,b){return a.name.localeCompare(b.name);});
+  var h='<thead><tr><th scope="col" class="it"><button type="button" class="swap" data-swap aria-label="Switch grouping">'+(qBy==="item"?"Item":"Expense level")+' <span class="ar">⇄</span></button></th><th scope="col" class="it">'+(qBy==="item"?"Expense level":"Item")+'</th><th scope="col">Cost each</th>';
+  GROUPS.forEach(function(g){h+='<th scope="col">'+g.name+'</th>';});
+  h+='<th scope="col" style="text-align:right">Billed</th><th scope="col"><span style="position:absolute;left:-9999px">Reset</span></th></tr></thead>';
+  outer.forEach(function(o){
+    h+='<tbody class="grpb">';
+    inner.forEach(function(i,k){
+      var sv=qBy==="item"?o:i,sc=qBy==="item"?i:o,q=state.q[sc.id],n=0;
+      GROUPS.forEach(function(g){n+=((q[g.id]||{})[sv.id]||0);});
+      h+='<tr data-row="'+sc.id+'|'+sv.id+'">';
+      if(k===0)h+='<th scope="rowgroup" class="it head" rowspan="'+inner.length+'">'+esc(qBy==="item"?sv.name:sc.name)+'</th>';
+      h+='<td class="lv it">'+esc(qBy==="item"?sc.name:sv.name)+'</td><td><input class="costin" type="number" min="0" step="5" data-cost="'+sv.id+'" value="'+state.c[sv.id]+'" aria-label="Cost each, '+esc(sv.name)+'"></td>';
+      GROUPS.forEach(function(g){h+='<td>'+stepper(sc.id,g.id,sv.id,(q[g.id]||{})[sv.id]||0)+'</td>';});
+      h+='<td class="bl" data-bl="'+sc.id+'-'+sv.id+'">'+$(n*(+state.c[sv.id]||0))+'</td><td><button type="button" class="mini" data-reset-row="'+sc.id+'|'+sv.id+'" title="Reset row to defaults" aria-label="Reset '+esc(sv.name)+', '+sc.name+'">↺</button></td></tr>';
+    });
+    h+='</tbody>';
+  });
+  qtyEl.innerHTML=h;setBarH();refreshMarks();
+}
+function setBarH(){document.documentElement.style.setProperty("--barh",barEl.getBoundingClientRect().height+"px");}
+window.addEventListener("resize",setBarH);
+function updateRowBilled(){
+  qtyEl.querySelectorAll("[data-bl]").forEach(function(td){var p=td.dataset.bl.split("-"),q=state.q[p[0]],n=0;GROUPS.forEach(function(g){n+=((q[g.id]||{})[p[1]]||0);});td.textContent=$(n*(+state.c[p[1]]||0));});
+}
+function updateBilled(){SCEN.forEach(function(sc){var a=barEl.querySelector('[data-billed="'+sc.id+'"]');if(a)a.textContent=$(billed(sc.id));});}
+var DEF=defaults();
+function dq(lv,g,id){return (DEF.q[lv][g]||{})[id]||0;}
+function cq(lv,g,id){return (state.q[lv][g]||{})[id]||0;}
+function rowMod(lv,id){return GROUPS.some(function(g){return cq(lv,g.id,id)!==dq(lv,g.id,id);});}
+function lvMod(lv){return SERVICES.some(function(sv){return rowMod(lv,sv.id);});}
+function costMod(id){return (+state.c[id])!==DEF.c[id];}
+function refreshMarks(){
+  var any=false;
+  SCEN.forEach(function(sc){var m=lvMod(sc.id);any=any||m;var box=barEl.querySelector('[data-lvbox="'+sc.id+'"]');if(box){box.classList.toggle("mod",m);var b=box.querySelector("button");if(b)b.disabled=!m;}});
+  SERVICES.forEach(function(sv){if(costMod(sv.id))any=true;});
+  var ra=barEl.querySelector("[data-reset-all]");if(ra)ra.disabled=!any;
+  qtyEl.querySelectorAll("tr[data-row]").forEach(function(tr){
+    var p=tr.dataset.row.split("|"),lv=p[0],id=p[1],m=rowMod(lv,id),cm=costMod(id);
+    tr.classList.toggle("mod",m||cm);
+    var b=tr.querySelector("[data-reset-row]");if(b)b.disabled=!(m||cm);
+    tr.querySelectorAll(".step input").forEach(function(inp){inp.closest(".step").classList.toggle("chg",cq(lv,inp.dataset.g,id)!==dq(lv,inp.dataset.g,id));});
+    var ci=tr.querySelector(".costin");if(ci)ci.classList.toggle("chg",cm);
+  });
+}
+function changed(){save();updateBilled();updateRowBilled();refreshMarks();renderTable();}
+barEl.addEventListener("click",function(e){
+  var t=e.target.closest("button");if(!t)return;
+  if(t.id==="tog"){svcOpen=!svcOpen;wrapEl.hidden=!svcOpen;buildBar();setBarH();return;}
+  var d=defaults();
+  if(t.hasAttribute("data-reset-all")){state=d;}
+  else if(t.dataset.resetLv){state.q[t.dataset.resetLv]=d.q[t.dataset.resetLv];}
+  else return;
+  buildTable();changed();
+});
+qtyEl.addEventListener("click",function(e){
+  var b=e.target.closest(".arr button");
+  if(b){var inp=b.closest(".step").querySelector("input");inp.value=Math.max(0,(+inp.value||0)+(+b.dataset.d));inp.dispatchEvent(new Event("input",{bubbles:true}));return;}
+  if(e.target.closest("[data-swap]")){qBy=qBy==="item"?"level":"item";buildTable();var sw=qtyEl.querySelector("[data-swap]");if(sw)sw.focus();return;}
+  var r=e.target.closest("[data-reset-row]");
+  if(r){var p=r.dataset.resetRow.split("|"),lv=p[0],id=p[1],d=defaults();GROUPS.forEach(function(g){state.q[lv][g.id]=state.q[lv][g.id]||{};state.q[lv][g.id][id]=(d.q[lv][g.id]||{})[id]||0;});state.c[id]=d.c[id];buildTable();changed();}
+});
+qtyEl.addEventListener("input",function(e){
+  var t=e.target;
+  if(t.dataset.cost){state.c[t.dataset.cost]=Math.max(0,+t.value||0);qtyEl.querySelectorAll('[data-cost="'+t.dataset.cost+'"]').forEach(function(o){if(o!==t)o.value=state.c[t.dataset.cost];});}
+  else if(t.dataset.v){var n=Math.max(0,Math.round(+t.value||0));state.q[t.dataset.s][t.dataset.g]=state.q[t.dataset.s][t.dataset.g]||{};state.q[t.dataset.s][t.dataset.g][t.dataset.v]=n;t.closest(".step").classList.toggle("zero",!n);}
+  else return;
+  changed();
+});
+
+/* ---------- results table ---------- */
+var COLS=[{id:"low",name:"Low"},{id:"med",name:"Medium"},{id:"high",name:"High"},{id:"vhigh",name:"Very high"},{id:"max",name:"Max"}];
+var sortCol="med",sortDir=1,shown={A:true,B:true,C:true,D:true},openRows={};
+var tbl=document.getElementById("res");
+function header(){
+  var h='<tr><th class="l" scope="col"><button type="button" data-sort="label">Coverage setup<span class="ar">'+(sortCol==="label"?(sortDir>0?"▲":"▼"):"")+'</span></button></th>';
+  COLS.forEach(function(c){h+='<th scope="col" aria-sort="'+(sortCol===c.id?(sortDir>0?"ascending":"descending"):"none")+'"><button type="button" data-sort="'+c.id+'">'+c.name+'<span class="ar">'+(sortCol===c.id?(sortDir>0?"▲":"▼"):"↕")+'</span></button></th>';});
+  tbl.tHead.innerHTML=h+"</tr>";
+}
+function heatColor(t){
+  if(t<=.5)return "color-mix(in oklab, var(--good) "+Math.round((1-t*2)*100)+"%, var(--mid))";
+  return "color-mix(in oklab, var(--mid) "+Math.round((1-(t-.5)*2)*100)+"%, var(--bad))";
+}
+function unitLine(u){
+  var who=u.who.map(function(w){return w==="you"?"me":w==="wife"?"my spouse":"the kids";});
+  var s=who.length===1?who[0]:who.slice(0,-1).join(", ")+" & "+who[who.length-1];
+  var extra=u.plan.owner==="her"?" ("+NETNOTE[u.plan.net]+")":"";
+  return esc(u.plan.name)+extra+" covers "+s;
+}
+function detailHTML(r){
+  var o=r.opt,h='<div class="inner"><p class="units">'+o.units.map(unitLine).join(" · ")+'</p><div class="scroll"><table class="brk"><thead><tr><th scope="col"></th>';
+  SCEN.forEach(function(sc){h+='<th scope="col">'+sc.name+'</th>';});h+='<th scope="col">Max</th></tr></thead><tbody>';
+  function row(lbl,f,fm,neg){h+='<tr><td>'+lbl+'</td>';SCEN.forEach(function(sc){var v=f(r.s[sc.id]);h+='<td'+(neg&&v?' class="neg"':'')+'>'+(neg&&v?"−":"")+$(v)+'</td>';});var m=fm(r.max);h+='<td'+(neg&&m?' class="neg"':'')+'>'+(m===null?"—":(neg&&m?"−":"")+$(m))+'</td></tr>';}
+  row("Premiums",function(x){return x.prem;},function(m){return m.prem;});
+  row("Paid before deductible",function(x){return x.pre;},function(){return null;});
+  row("Copays",function(x){return x.cop;},function(){return null;});
+  row("Coinsurance",function(x){return x.coi;},function(){return null;});
+  row("Out-of-pocket total",function(x){return x.oop;},function(m){return m.oop;});
+  row("Employer HSA money",function(x){return x.emp;},function(m){return m.emp;},true);
+  row("HSA tax savings (maxed out)",function(x){return x.tax;},function(m){return m.tax;},true);
+  h+='<tr class="tot"><td>Annual total</td>';SCEN.forEach(function(sc){h+='<td>'+$(r.s[sc.id].total)+'</td>';});h+='<td>'+$(r.max.total)+'</td></tr>';
+  return h+'</tbody></table></div></div>';
+}
+function renderTable(){
+  header();
+  var all=evalAll(state),rows=all.filter(function(r){return shown[r.opt.g];});
+  var stats={};COLS.forEach(function(c){var v=rows.map(function(r){return val(r,c.id);});stats[c.id]={min:Math.min.apply(null,v),max:Math.max.apply(null,v)};});
+  rows.sort(function(a,b){
+    if(sortCol==="label"){var x=a.opt.g+a.opt.label,y=b.opt.g+b.opt.label;return x<y?-sortDir:x>y?sortDir:0;}
+    return (val(a,sortCol)-val(b,sortCol))*sortDir;
+  });
+  var h="";
+  rows.forEach(function(r){
+    var o=r.opt,gname=GROUPDEF.filter(function(g){return g.id===o.g;})[0].name,isOpen=!!openRows[o.idx];
+    h+='<tr class="row" tabindex="0" data-i="'+o.idx+'" aria-expanded="'+isOpen+'"><td class="l"><div class="plans">'+esc(o.label)+(o.lock?'<span class="tag lock">B3 locked</span>':'')+'</div><div class="opt">'+esc(gname)+'</div></td>';
+    COLS.forEach(function(c){
+      var v=val(r,c.id),st=stats[c.id],t=st.max>st.min?(v-st.min)/(st.max-st.min):0,best=Math.round(v)===Math.round(st.min);
+      h+='<td class="heat'+(best?" best":"")+'" style="background:'+heatColor(t)+'">'+$(v)+'</td>';
+    });
+    h+='</tr>';
+    if(isOpen)h+='<tr class="detail"><td colspan="'+(COLS.length+1)+'">'+detailHTML(r)+'</td></tr>';
+  });
+  if(!rows.length)h='<tr><td class="l" colspan="6">Pick at least one coverage setup above to see totals.</td></tr>';
+  tbl.tBodies[0].innerHTML=h;
+}
+tbl.addEventListener("click",function(e){
+  var s=e.target.closest("[data-sort]");
+  if(s){var c=s.dataset.sort;if(sortCol===c)sortDir=-sortDir;else{sortCol=c;sortDir=1;}renderTable();return;}
+  var tr=e.target.closest("tr.row");if(tr){var i=tr.dataset.i;openRows[i]=!openRows[i];renderTable();}
+});
+tbl.addEventListener("keydown",function(e){
+  var tr=e.target.closest("tr.row");if(tr&&(e.key==="Enter"||e.key===" ")){e.preventDefault();var i=tr.dataset.i;openRows[i]=!openRows[i];renderTable();var n=tbl.querySelector('tr.row[data-i="'+i+'"]');if(n)n.focus();}
+});
+var fEl=document.getElementById("filters");
+fEl.innerHTML=GROUPDEF.map(function(g){return '<button type="button" class="chip" data-g="'+g.id+'" aria-pressed="true">'+esc(g.name)+'</button>';}).join("");
+fEl.addEventListener("click",function(e){var b=e.target.closest(".chip");if(!b)return;var g=b.dataset.g;shown[g]=!shown[g];b.setAttribute("aria-pressed",shown[g]);renderTable();});
+
+/* ---------- summary (defaults) ---------- */
+function renderSummary(){
+  var all=evalAll(defaults());
+  function best(col,filter){var r=all.filter(filter||function(){return true;});r.sort(function(a,b){return val(a,col)-val(b,col);});return r[0];}
+  function name(r){return r.opt.label+" ("+GROUPDEF.filter(function(g){return g.id===r.opt.g;})[0].name.toLowerCase()+")";}
+  // most balanced: smallest worst-case regret across the four years
+  var mins={};SCEN.forEach(function(sc){mins[sc.id]=Math.min.apply(null,all.map(function(r){return r.s[sc.id].total;}));});
+  var bal=all.map(function(r){return {r:r,reg:Math.max.apply(null,SCEN.map(function(sc){return r.s[sc.id].total-mins[sc.id];}))};}).sort(function(a,b){return a.reg-b.reg;})[0];
+  var cells=[
+    ["Cheapest at medium expense",best("med")],
+    ["Cheapest at very high expense",best("vhigh")],
+    ["Lowest worst case",best("max")],
+    ["Most balanced",bal.r,"Never more than "+$(bal.reg)+" above the cheapest option at any expense level"]
+  ];
+  var h="";cells.forEach(function(c){var r=c[1],col=c[0].indexOf("worst")>-1?"max":c[0].indexOf("very high")>-1?"vhigh":"med";
+    h+='<div class="sum-cell"><div class="k">'+esc(c[0])+'</div><div class="v">'+$(val(r,col))+'</div><div class="w">'+esc(r.opt.label)+'</div><div class="note">'+esc(c[2]||GROUPDEF.filter(function(g){return g.id===r.opt.g;})[0].name)+'</div></div>';});
+  document.getElementById("sumGrid").innerHTML=h;
+  // takeaways
+  function bestIn(g,col){return best(col,function(r){return r.opt.g===g;});}
+  var A=bestIn("A","med"),B=bestIn("B","med"),C=bestIn("C","med"),D=bestIn("D","med");
+  var Amax=bestIn("A","max");
+  var t=[];
+  t.push("Keep the kids with my spouse. The best Me alone · Spouse & kids setup ("+A.opt.label+", "+$(val(A,"med"))+" at medium expense) beats Me & kids · Spouse alone ("+B.opt.label+", "+$(val(B,"med"))+"), the whole family on my spouse’s plan ("+D.opt.label+", "+$(val(D,"med"))+") or the whole family on my plan ("+C.opt.label+", "+$(val(C,"med"))+").");
+  var aMed=bestIn("A","med"),aV=bestIn("A","vhigh");
+  if(aMed===aV)t.push("With me on B3, "+aMed.opt.label.replace("B3 + ","")+" for spouse & kids is cheapest at both medium and very high expense ("+$(val(aV,"vhigh"))+"). My spouse’s employer HSA money and the tax savings on a maxed-out family HSA put it ahead.");
+  else t.push("With me on B3, "+aMed.opt.label.replace("B3 + ","")+" is cheapest for spouse & kids at medium expense, and "+aV.opt.label.replace("B3 + ","")+" when something big happens ("+$(val(aV,"vhigh"))+" vs "+$(val(aMed,"vhigh"))+").");
+  t.push("Lowest ceiling with me on B3: "+Amax.opt.label.replace("B3 + ","")+" for spouse & kids caps the year at "+$(val(Amax,"max"))+".");
+  var fb=all.filter(function(r){return r.opt.g==="A"&&r.opt.label===aMed.opt.label.replace("Focus","Reach");})[0];
+  if(aMed.opt.label.indexOf("Focus")>-1&&fb)t.push("Focus plans use a narrow network. Check the kids’ hospital and the kids’ pediatrician before picking one. If they’re out, "+fb.opt.label+" is the same plan on the broad network for "+$(val(fb,"med")-val(aMed,"med"))+" more at medium expense.");
+  else t.push("Focus plans are the cheapest of my spouse’s options but use a narrow network. Check the kids’ hospital and the kids’ pediatrician before picking one.");
+  document.getElementById("takeaways").innerHTML=t.map(function(x){return "<li>"+esc(x)+"</li>";}).join("");
+}
+
+buildBar();buildTable();renderTable();renderSummary();
+})();
+</script>
+</body>
+</html>
