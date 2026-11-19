@@ -110,7 +110,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .filters{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
 .chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:.88rem}
 .chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.res{border-collapse:collapse;width:100%;min-width:1040px;background:var(--surface);border:1px solid var(--line);font-size:.92rem}
+.res{border-collapse:collapse;width:100%;min-width:900px;background:var(--surface);border:1px solid var(--line);font-size:.92rem}
 .res th{position:sticky;top:0;background:var(--surface);z-index:1;text-align:right;padding:10px;border-bottom:2px solid var(--line);font-size:.85rem;white-space:nowrap}
 .res th.l{text-align:left}
 .res th button{background:none;border:0;padding:0;font-weight:600;color:var(--ink)}
@@ -125,6 +125,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .opt{font-size:.8rem;color:var(--muted)}
 .plans{font-weight:600}
 .res td.blank{color:var(--muted)}
+.res th.su,.res td.su{width:1%;white-space:nowrap;padding-right:22px}
+.res th.su+th:not(.su),.res td.su+td:not(.su){padding-left:22px}
 .tag.hsa{color:var(--best)}
 .filters .sep{width:1px;background:var(--line);margin:2px 4px}
 .tag{display:inline-block;font-size:.72rem;padding:1px 6px;border-radius:3px;background:var(--soft);color:var(--muted);margin-left:6px;vertical-align:1px}
@@ -438,13 +440,13 @@ qtyEl.addEventListener("input",function(e){
 /* ---------- results table ---------- */
 var COLS=[{id:"low",name:"Low"},{id:"med",name:"Medium"},{id:"high",name:"High"},{id:"vhigh",name:"Very high"},{id:"max",name:"Max"}];
 var sortCol="med",sortDir=1,shown={A:true,B:true,C:true,D:true},hsaOnly=false,openRows={};
-var SETUP=[{id:"my",name:"My plan"},{id:"net",name:"Spouse network"},{id:"type",name:"Spouse type"},{id:"kids",name:"Kids on"}];
+var SETUP=[{id:"my",name:"My plan"},{id:"net",name:"Spouse network"},{id:"type",name:"Spouse type"},{id:"kids",name:"Kids with"}];
 var TYPE_RANK={Low:0,Medium:1,HDHP:2};
 function setupOf(o){
   var mine=null,sp=null,kids="";
   o.units.forEach(function(u){
     if(u.plan.owner==="you")mine=u.plan;else sp=u.plan;
-    if(u.who.indexOf("kids")>-1)kids=u.plan.owner==="you"?"Mine":"Spouse’s";
+    if(u.who.indexOf("kids")>-1)kids=u.plan.owner==="you"?"Me":"Spouse";
   });
   return {mine:mine,sp:sp,my:mine?mine.name:"",net:sp?sp.net:"",type:sp?sp.lvl:"",kids:kids};
 }
@@ -459,7 +461,7 @@ function setupCmp(a,b,col){
 var tbl=document.getElementById("res");
 function header(){
   var h='<tr>';
-  SETUP.forEach(function(c){h+='<th class="l" scope="col" aria-sort="'+(sortCol===c.id?(sortDir>0?"ascending":"descending"):"none")+'"><button type="button" data-sort="'+c.id+'">'+c.name+'<span class="ar">'+(sortCol===c.id?(sortDir>0?"▲":"▼"):"↕")+'</span></button></th>';});
+  SETUP.forEach(function(c){h+='<th class="l su" scope="col" aria-sort="'+(sortCol===c.id?(sortDir>0?"ascending":"descending"):"none")+'"><button type="button" data-sort="'+c.id+'">'+c.name+'<span class="ar">'+(sortCol===c.id?(sortDir>0?"▲":"▼"):"↕")+'</span></button></th>';});
   COLS.forEach(function(c){h+='<th scope="col" aria-sort="'+(sortCol===c.id?(sortDir>0?"ascending":"descending"):"none")+'"><button type="button" data-sort="'+c.id+'">'+c.name+'<span class="ar">'+(sortCol===c.id?(sortDir>0?"▲":"▼"):"↕")+'</span></button></th>';});
   tbl.tHead.innerHTML=h+"</tr>";
 }
@@ -499,9 +501,9 @@ function renderTable(){
   rows.forEach(function(r){
     var o=r.opt,gname=GROUPDEF.filter(function(g){return g.id===o.g;})[0].name,isOpen=!!openRows[o.idx];
     var su=setupOf(o);
-    function cell(v,extra){return '<td class="l'+(v?"":" blank")+'"><span class="plans">'+esc(v)+'</span>'+(extra||"")+'</td>';}
+    function cell(v,extra){return '<td class="l su'+(v?"":" blank")+'"><span class="plans">'+esc(v)+'</span>'+(extra||"")+'</td>';}
     h+='<tr class="row" tabindex="0" data-i="'+o.idx+'" aria-expanded="'+isOpen+'" title="'+esc(gname)+'">'+
-      cell(su.my,(o.lock?'<span class="tag lock">locked</span>':'')+(su.mine&&su.mine.hsa?'<span class="tag hsa">HSA</span>':''))+
+      cell(su.my,(su.mine&&su.mine.hsa?'<span class="tag hsa">HSA</span>':''))+
       cell(su.net)+
       cell(su.type,su.sp&&su.sp.hsa?'<span class="tag hsa">HSA</span>':'')+
       cell(su.kids);
