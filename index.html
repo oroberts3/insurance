@@ -120,8 +120,10 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .res tr.row{cursor:pointer}
 .res tr.row:hover td.l{text-decoration:underline;text-decoration-color:var(--line)}
 .res td.heat{position:relative}
-.res td.best{font-weight:700;color:var(--best)}
-.res td.best::after{content:"★";font-size:.75rem;margin-left:4px}
+.res td.rank{font-weight:700}
+.res td.r1{color:var(--best)}
+.rk{display:inline-block;min-width:2.4em;margin-right:8px;padding:1px 5px;border-radius:3px;font-size:.7rem;font-weight:700;text-align:center;vertical-align:1px;background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.r1 .rk{background:var(--best);color:var(--surface);border-color:var(--best)}
 .opt{font-size:.8rem;color:var(--muted)}
 .plans{font-weight:600}
 .res td.blank{color:var(--muted)}
@@ -173,7 +175,7 @@ footer li{margin:.3em 0;max-width:90ch}
     <p class="note">Premiums + out-of-pocket − employer HSA money − tax savings on a maxed-out HSA. Click a column to sort, click a row for the breakdown.</p>
     <div class="filters" id="filters" role="group" aria-label="Show coverage setups"></div>
     <div class="scroll"><table class="res" id="res"><thead></thead><tbody></tbody></table></div>
-    <div class="legend"><span>Cheapest</span><span class="bar"></span><span>Most expensive in column</span><span>★ best</span></div>
+    <div class="legend"><span>Cheapest</span><span class="bar"></span><span>Most expensive in column</span><span><span class="rk" style="background:var(--best);color:var(--surface);border-color:var(--best)">1st</span><span class="rk">2nd</span><span class="rk">3rd</span>cheapest three in each column</span></div>
   </section>
 
   <footer>
@@ -489,10 +491,13 @@ function detailHTML(r){
   h+='<tr class="tot"><td>Annual total</td>';SCEN.forEach(function(sc){h+='<td>'+$(r.s[sc.id].total)+'</td>';});h+='<td>'+$(r.max.total)+'</td></tr>';
   return h+'</tbody></table></div></div>';
 }
+var ORD={1:"1st",2:"2nd",3:"3rd"};
+// Competition ranking on rounded dollars: ties share a rank and the next rank is skipped.
+function rankIn(vals,v){var x=Math.round(v),n=1;vals.forEach(function(y){if(y<x)n++;});return n;}
 function renderTable(){
   header();
   var all=evalAll(state),rows=all.filter(function(r){return shown[r.opt.g]&&(!hsaOnly||hsaEligible(r.opt));});
-  var stats={};COLS.forEach(function(c){var v=rows.map(function(r){return val(r,c.id);});stats[c.id]={min:Math.min.apply(null,v),max:Math.max.apply(null,v)};});
+  var stats={};COLS.forEach(function(c){var v=rows.map(function(r){return val(r,c.id);});stats[c.id]={min:Math.min.apply(null,v),max:Math.max.apply(null,v),vals:v.map(Math.round)};});
   rows.sort(function(a,b){
     if(SETUP.some(function(c){return c.id===sortCol;})){var d=setupCmp(a,b,sortCol)*sortDir;return d||val(a,"med")-val(b,"med");}
     return (val(a,sortCol)-val(b,sortCol))*sortDir;
@@ -508,8 +513,8 @@ function renderTable(){
       cell(su.type,su.sp&&su.sp.hsa?'<span class="tag hsa">HSA</span>':'')+
       cell(su.kids);
     COLS.forEach(function(c){
-      var v=val(r,c.id),st=stats[c.id],t=st.max>st.min?(v-st.min)/(st.max-st.min):0,best=Math.round(v)===Math.round(st.min);
-      h+='<td class="heat'+(best?" best":"")+'" style="background:'+heatColor(t)+'">'+$(v)+'</td>';
+      var v=val(r,c.id),st=stats[c.id],t=st.max>st.min?(v-st.min)/(st.max-st.min):0,rk=rankIn(st.vals,v);
+      h+='<td class="heat'+(rk<=3?" rank r"+rk:"")+'" style="background:'+heatColor(t)+'">'+(rk<=3?'<span class="rk">'+ORD[rk]+'</span>':'')+$(v)+'</td>';
     });
     h+='</tr>';
     if(isOpen)h+='<tr class="detail"><td colspan="'+(COLS.length+SETUP.length)+'">'+detailHTML(r)+'</td></tr>';
